@@ -30,7 +30,7 @@ use PrestaShop\PrestaShop\Core\Product\Search\SortOrder;
 
 class CategoryControllerCore extends ProductListingFrontController
 {
-    /** @var string Internal controller name */
+    /** string Internal controller name */
     public $php_self = 'category';
 
     /** @var bool If set to false, customer cannot view the current category. */
@@ -51,16 +51,27 @@ class CategoryControllerCore extends ProductListingFrontController
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCanonicalURL()
     {
         if (!Validate::isLoadedObject($this->category)) {
             return '';
         }
+        $canonicalUrl = $this->context->link->getCategoryLink($this->category);
+        $parsedUrl = parse_url($canonicalUrl);
+        if (isset($parsedUrl['query'])) {
+            parse_str($parsedUrl['query'], $params);
+        } else {
+            $params = [];
+        }
+        $page = (int) Tools::getValue('page');
+        if ($page > 1) {
+            $params['page'] = $page;
+        } else {
+            unset($params['page']);
+        }
+        $canonicalUrl = http_build_url($parsedUrl, ['query' => http_build_query($params)]);
 
-        return $this->buildPaginatedUrl($this->context->link->getCategoryLink($this->category));
+        return $canonicalUrl;
     }
 
     /**
@@ -98,16 +109,15 @@ class CategoryControllerCore extends ProductListingFrontController
 
         $categoryVar = $this->getTemplateVarCategory();
 
-        // Chained hook call - if multiple modules are hooked here, they will receive the result of the previous one as a parameter
         $filteredCategory = Hook::exec(
             'filterCategoryContent',
             ['object' => $categoryVar],
-            null,
-            false,
-            true,
-            false,
-            null,
-            true
+            $id_module = null,
+            $array_return = false,
+            $check_exceptions = true,
+            $use_push = false,
+            $id_shop = null,
+            $chain = true
         );
         if (!empty($filteredCategory['object'])) {
             $categoryVar = $filteredCategory['object'];
@@ -149,7 +159,7 @@ class CategoryControllerCore extends ProductListingFrontController
     public function getLayout()
     {
         if (!$this->category->checkAccess($this->context->customer->id) || $this->notFound) {
-            return $this->context->shop->theme->getLayoutRelativePathForPage('error');
+            return 'layouts/layout-full-width.tpl';
         }
 
         return parent::getLayout();
@@ -157,37 +167,23 @@ class CategoryControllerCore extends ProductListingFrontController
 
     protected function getAjaxProductSearchVariables()
     {
-        // Basic data with rendered products, facets, active filters etc.
         $data = parent::getAjaxProductSearchVariables();
-
-        // Extra data for category pages, so we can dynamically update also these parts
-        $rendered_category_header = $this->render('catalog/_partials/category-header', ['listing' => $data]);
-        $data['rendered_products_header'] = $rendered_category_header;
-        $rendered_category_footer = $this->render('catalog/_partials/category-footer', ['listing' => $data]);
-        $data['rendered_products_footer'] = $rendered_category_footer;
+        $rendered_products_header = $this->render('catalog/_partials/category-header', ['listing' => $data]);
+        $data['rendered_products_header'] = $rendered_products_header;
 
         return $data;
     }
 
-    /**
-     * @return ProductSearchQuery
-     *
-     * @throws \PrestaShop\PrestaShop\Core\Product\Search\Exception\InvalidSortOrderDirectionException
-     */
     protected function getProductSearchQuery()
     {
         $query = new ProductSearchQuery();
         $query
-            ->setQueryType('category')
             ->setIdCategory($this->category->id)
             ->setSortOrder(new SortOrder('product', Tools::getProductsOrder('by'), Tools::getProductsOrder('way')));
 
         return $query;
     }
 
-    /**
-     * @return CategoryProductSearchProvider
-     */
     protected function getDefaultProductSearchProvider()
     {
         return new CategoryProductSearchProvider(
@@ -243,7 +239,6 @@ class CategoryControllerCore extends ProductListingFrontController
         $breadcrumb = parent::getBreadcrumbLinks();
 
         foreach ($this->category->getAllParents() as $category) {
-            /** @var Category $category */
             if ($category->id_parent != 0 && !$category->is_root_category && $category->active) {
                 $breadcrumb['links'][] = [
                     'title' => $category->name,
@@ -252,7 +247,7 @@ class CategoryControllerCore extends ProductListingFrontController
             }
         }
 
-        if ($this->category->id_parent != 0 && !$this->category->is_root_category && $this->category->active) {
+        if ($this->category->id_parent != 0 && !$this->category->is_root_category && $category->active) {
             $breadcrumb['links'][] = [
                 'title' => $this->category->name,
                 'url' => $this->context->link->getCategoryLink($this->category),
@@ -262,9 +257,6 @@ class CategoryControllerCore extends ProductListingFrontController
         return $breadcrumb;
     }
 
-    /**
-     * @return Category
-     */
     public function getCategory()
     {
         return $this->category;

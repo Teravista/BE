@@ -27,11 +27,8 @@ use PrestaShop\PrestaShop\Core\Util\InternationalizedDomainNameConverter;
 
 class PasswordControllerCore extends FrontController
 {
-    /** @var string */
     public $php_self = 'password';
-    /** @var bool */
     public $auth = false;
-    /** @var bool */
     public $ssl = true;
 
     /**
@@ -76,7 +73,7 @@ class PasswordControllerCore extends FrontController
 
             if (!Validate::isLoadedObject($customer)) {
                 $this->success[] = $this->trans(
-                    'If this email address has been registered in our store, you will receive a link to reset your password at %email%.',
+                    'If this email address has been registered in our shop, you will receive a link to reset your password at %email%.',
                     ['%email%' => $customer->email],
                     'Shop.Notifications.Success'
                 );
@@ -112,7 +109,7 @@ class PasswordControllerCore extends FrontController
                         $customer->firstname . ' ' . $customer->lastname
                     )
                 ) {
-                    $this->success[] = $this->trans('If this email address has been registered in our store, you will receive a link to reset your password at %email%.', ['%email%' => $customer->email], 'Shop.Notifications.Success');
+                    $this->success[] = $this->trans('If this email address has been registered in our shop, you will receive a link to reset your password at %email%.', ['%email%' => $customer->email], 'Shop.Notifications.Success');
                     $this->setTemplate('customer/password-infos');
                 } else {
                     $this->errors[] = $this->trans('An error occurred while sending the email.', [], 'Shop.Notifications.Error');
@@ -157,10 +154,10 @@ class PasswordControllerCore extends FrontController
 
                 if ($passwd && $confirmation) {
                     if ($passwd !== $confirmation) {
-                        $this->errors[] = $this->trans('The confirmation password doesn\'t match.', [], 'Shop.Notifications.Error');
+                        $this->errors[] = $this->trans('The password and its confirmation do not match.', [], 'Shop.Notifications.Error');
                     }
 
-                    if (!Validate::isPlaintextPassword($passwd)) {
+                    if (!Validate::isPasswd($passwd)) {
                         $this->errors[] = $this->trans('The password is not in a valid format.', [], 'Shop.Notifications.Error');
                     }
                 }

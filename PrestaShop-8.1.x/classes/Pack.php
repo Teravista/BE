@@ -32,30 +32,30 @@ class PackCore extends Product
     /**
      * Only decrement pack quantity.
      *
-     * @var int
+     * @var string
      */
-    public const STOCK_TYPE_PACK_ONLY = PackStockType::STOCK_TYPE_PACK_ONLY;
+    const STOCK_TYPE_PACK_ONLY = PackStockType::STOCK_TYPE_PACK_ONLY;
 
     /**
      * Only decrement pack products quantities.
      *
-     * @var int
+     * @var string
      */
-    public const STOCK_TYPE_PRODUCTS_ONLY = PackStockType::STOCK_TYPE_PRODUCTS_ONLY;
+    const STOCK_TYPE_PRODUCTS_ONLY = PackStockType::STOCK_TYPE_PRODUCTS_ONLY;
 
     /**
      * Decrement pack quantity and pack products quantities.
      *
-     * @var int
+     * @var string
      */
-    public const STOCK_TYPE_PACK_BOTH = PackStockType::STOCK_TYPE_BOTH;
+    const STOCK_TYPE_PACK_BOTH = PackStockType::STOCK_TYPE_BOTH;
 
     /**
      * Use pack quantity default setting.
      *
-     * @var int
+     * @var string
      */
-    public const STOCK_TYPE_DEFAULT = PackStockType::STOCK_TYPE_DEFAULT;
+    const STOCK_TYPE_DEFAULT = PackStockType::STOCK_TYPE_DEFAULT;
 
     protected static $cachePackItems = [];
     protected static $cacheIsPack = [];
@@ -71,7 +71,7 @@ class PackCore extends Product
     /**
      * Is product a pack?
      *
-     * @param int $id_product
+     * @param $id_product
      *
      * @return bool
      */
@@ -87,8 +87,7 @@ class PackCore extends Product
 
         if (!array_key_exists($id_product, self::$cacheIsPack)) {
             $result = Db::getInstance()->getValue('SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'pack` WHERE id_product_pack = ' . (int) $id_product);
-            $productType = Db::getInstance()->getValue('SELECT product_type FROM `' . _DB_PREFIX_ . 'product` WHERE id_product = ' . (int) $id_product);
-            self::$cacheIsPack[$id_product] = ($result > 0) || $productType === ProductType::TYPE_PACK;
+            self::$cacheIsPack[$id_product] = ($result > 0);
         }
 
         return self::$cacheIsPack[$id_product];
@@ -135,30 +134,8 @@ class PackCore extends Product
         $price_display_method = !self::$_taxCalculationMethod;
         $items = Pack::getItems($id_product, Configuration::get('PS_LANG_DEFAULT'));
         foreach ($items as $item) {
-            $pricePerItem = $item->getPrice($price_display_method, ($item->id_pack_product_attribute ? $item->id_pack_product_attribute : null));
-
-            // Different calculation depending on rounding type
-            switch (Configuration::get('PS_ROUND_TYPE')) {
-                case Order::ROUND_TOTAL:
-                    $sum += $pricePerItem * $item->pack_quantity;
-
-                    break;
-                case Order::ROUND_LINE:
-                    $sum += Tools::ps_round(
-                        $pricePerItem * $item->pack_quantity,
-                        Context::getContext()->getComputingPrecision()
-                    );
-
-                    break;
-                case Order::ROUND_ITEM:
-                default:
-                    $sum += Tools::ps_round(
-                        $pricePerItem,
-                        Context::getContext()->getComputingPrecision()
-                    ) * $item->pack_quantity;
-
-                    break;
-            }
+            /* @var Product $item */
+            $sum += $item->getPrice($price_display_method, ($item->id_pack_product_attribute ? $item->id_pack_product_attribute : null)) * $item->pack_quantity;
         }
 
         return $sum;
@@ -255,11 +232,11 @@ class PackCore extends Product
     /**
      * Returns the available quantity of a given pack (this method already have decreased products in cart).
      *
-     * @param int $idProduct Product id
-     * @param int|null $idProductAttribute Product attribute id (optional)
+     * @param int $id_product Product id
+     * @param int $id_product_attribute Product attribute id (optional)
      * @param bool|null $cacheIsPack
-     * @param CartCore|null $cart
-     * @param int|null $idCustomization Product customization id (optional)
+     * @param Cart $cart
+     * @param int $idCustomization Product customization id (optional)
      *
      * @return int
      *
@@ -269,11 +246,12 @@ class PackCore extends Product
         $idProduct,
         $idProductAttribute = null,
         $cacheIsPack = null,
-        CartCore $cart = null,
+        Cart $cart = null,
         $idCustomization = null
     ) {
         $idProduct = (int) $idProduct;
         $idProductAttribute = (int) $idProductAttribute;
+        $cacheIsPack = (bool) $cacheIsPack;
 
         if (!self::isPack($idProduct)) {
             throw new PrestaShopException("Product with id $idProduct is not a pack");
@@ -371,7 +349,6 @@ class PackCore extends Product
 
         $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
-        /** @var array{id_product: int, id_product_attribute_item: int|null, name: string} $line */
         foreach ($result as &$line) {
             if (Combination::isFeatureActive() && isset($line['id_product_attribute_item']) && $line['id_product_attribute_item']) {
                 $line['cache_default_attribute'] = $line['id_product_attribute'] = $line['id_product_attribute_item'];
@@ -469,14 +446,9 @@ class PackCore extends Product
         return $array_result;
     }
 
-    public static function deleteItems($id_product, $refreshCache = true)
+    public static function deleteItems($id_product)
     {
-        $result = true;
-        if ($refreshCache) {
-            $result = Db::getInstance()->update('product', ['cache_is_pack' => 0], 'id_product = ' . (int) $id_product);
-        }
-
-        return $result &&
+        return Db::getInstance()->update('product', ['cache_is_pack' => 0], 'id_product = ' . (int) $id_product) &&
             Db::getInstance()->execute('DELETE FROM `' . _DB_PREFIX_ . 'pack` WHERE `id_product_pack` = ' . (int) $id_product) &&
             Configuration::updateGlobalValue('PS_PACK_FEATURE_ACTIVE', Pack::isCurrentlyUsed());
     }
@@ -533,8 +505,8 @@ class PackCore extends Product
      *
      * @since 1.5.0
      *
-     * @param string|null $table Name of table linked to entity
-     * @param bool $has_active_column True if the table has an active column
+     * @param $table
+     * @param $has_active_column
      *
      * @return bool
      */

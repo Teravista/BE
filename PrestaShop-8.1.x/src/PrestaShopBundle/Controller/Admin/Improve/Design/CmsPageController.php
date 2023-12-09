@@ -61,11 +61,8 @@ use PrestaShop\PrestaShop\Core\Grid\Definition\Factory\CmsPageCategoryDefinition
 use PrestaShop\PrestaShop\Core\Grid\Definition\Factory\CmsPageDefinitionFactory;
 use PrestaShop\PrestaShop\Core\Grid\Position\Exception\PositionDataException;
 use PrestaShop\PrestaShop\Core\Grid\Position\Exception\PositionUpdateException;
-use PrestaShop\PrestaShop\Core\Grid\Position\GridPositionUpdaterInterface;
-use PrestaShop\PrestaShop\Core\Grid\Position\PositionUpdateFactoryInterface;
 use PrestaShop\PrestaShop\Core\Search\Filters\CmsPageCategoryFilters;
 use PrestaShop\PrestaShop\Core\Search\Filters\CmsPageFilters;
-use PrestaShop\PrestaShop\Core\Util\HelperCard\DocumentationLinkProviderInterface;
 use PrestaShopBundle\Controller\Admin\FrameworkBundleAdminController;
 use PrestaShopBundle\Security\Annotation\AdminSecurity;
 use PrestaShopBundle\Security\Annotation\DemoRestricted;
@@ -124,7 +121,7 @@ class CmsPageController extends FrameworkBundleAdminController
             )
         );
 
-        $helperBlockLinkProvider = $this->get(DocumentationLinkProviderInterface::class);
+        $helperBlockLinkProvider = $this->get('prestashop.core.util.helper_card.documentation_link_provider');
 
         return $this->render(
             '@PrestaShop/Admin/Improve/Design/Cms/index.html.twig',
@@ -207,7 +204,7 @@ class CmsPageController extends FrameworkBundleAdminController
             if (null !== $cmsPageId) {
                 $this->addFlash(
                     'success',
-                    $this->trans('Successful creation', 'Admin.Notifications.Success')
+                    $this->trans('Successful creation.', 'Admin.Notifications.Success')
                 );
                 if (!$request->request->has('save-and-preview')) {
                     return $this->redirectToParentIndexPageByCmsPageId($cmsPageId);
@@ -226,7 +223,7 @@ class CmsPageController extends FrameworkBundleAdminController
         }
 
         return $this->render(
-            '@PrestaShop/Admin/Improve/Design/Cms/add.html.twig',
+            'PrestaShopBundle:Admin/Improve/Design/Cms:add.html.twig',
             [
                 'cmsPageForm' => $form->createView(),
                 'cmsCategoryParentId' => $categoryParentId,
@@ -281,7 +278,7 @@ class CmsPageController extends FrameworkBundleAdminController
             if ($result->isSubmitted() && $result->isValid()) {
                 $this->addFlash(
                     'success',
-                    $this->trans('Successful update', 'Admin.Notifications.Success')
+                    $this->trans('Successful update.', 'Admin.Notifications.Success')
                 );
 
                 if ($request->request->has('save-and-preview')) {
@@ -303,7 +300,6 @@ class CmsPageController extends FrameworkBundleAdminController
         return $this->render(
             '@PrestaShop/Admin/Improve/Design/Cms/edit.html.twig',
             [
-                'cmsPageId' => $cmsPageId,
                 'cmsPageForm' => $form->createView(),
                 'cmsCategoryParentId' => $request->get('id_cms_category'),
                 'enableSidebar' => true,
@@ -340,7 +336,7 @@ class CmsPageController extends FrameworkBundleAdminController
             if (null !== $result->getIdentifiableObjectId()) {
                 $this->addFlash(
                     'success',
-                    $this->trans('Successful creation', 'Admin.Notifications.Success')
+                    $this->trans('Successful creation.', 'Admin.Notifications.Success')
                 );
 
                 return $this->redirectToIndexPageById($result->getIdentifiableObjectId());
@@ -400,7 +396,7 @@ class CmsPageController extends FrameworkBundleAdminController
             if ($result->isSubmitted() && $result->isValid()) {
                 $this->addFlash(
                     'success',
-                    $this->trans('Successful update', 'Admin.Notifications.Success')
+                    $this->trans('Successful update.', 'Admin.Notifications.Success')
                 );
 
                 return $this->redirectToIndexPageById($result->getIdentifiableObjectId());
@@ -454,7 +450,7 @@ class CmsPageController extends FrameworkBundleAdminController
 
             $this->addFlash(
                 'success',
-                $this->trans('Successful deletion', 'Admin.Notifications.Success')
+                $this->trans('Successful deletion.', 'Admin.Notifications.Success')
             );
         } catch (Exception $exception) {
             $this->addFlash(
@@ -540,7 +536,7 @@ class CmsPageController extends FrameworkBundleAdminController
 
         $positionDefinition = $this->get('prestashop.core.grid.cms_page_category.position_definition');
 
-        $positionUpdateFactory = $this->get(PositionUpdateFactoryInterface::class);
+        $positionUpdateFactory = $this->get('prestashop.core.grid.position.position_update_factory');
 
         try {
             $positionUpdate = $positionUpdateFactory->buildPositionUpdate($positionsData, $positionDefinition);
@@ -551,11 +547,11 @@ class CmsPageController extends FrameworkBundleAdminController
             return $this->redirectToIndexPageById($cmsCategoryParentId);
         }
 
-        $updater = $this->get(GridPositionUpdaterInterface::class);
+        $updater = $this->get('prestashop.core.grid.position.doctrine_grid_position_updater');
 
         try {
             $updater->update($positionUpdate);
-            $this->addFlash('success', $this->trans('Successful update', 'Admin.Notifications.Success'));
+            $this->addFlash('success', $this->trans('Successful update.', 'Admin.Notifications.Success'));
         } catch (PositionUpdateException $e) {
             $errors = [$e->toArray()];
             $this->flashErrors($errors);
@@ -592,7 +588,7 @@ class CmsPageController extends FrameworkBundleAdminController
         ];
 
         $positionDefinition = $this->get('prestashop.core.grid.cms_page.position_definition');
-        $positionUpdateFactory = $this->get(PositionUpdateFactoryInterface::class);
+        $positionUpdateFactory = $this->get('prestashop.core.grid.position.position_update_factory');
 
         try {
             $positionUpdate = $positionUpdateFactory->buildPositionUpdate($positionsData, $positionDefinition);
@@ -603,11 +599,11 @@ class CmsPageController extends FrameworkBundleAdminController
             return $this->redirectToParentIndexPage($cmsCategoryParentId);
         }
 
-        $updater = $this->get(GridPositionUpdaterInterface::class);
+        $updater = $this->get('prestashop.core.grid.position.doctrine_grid_position_updater');
 
         try {
             $updater->update($positionUpdate);
-            $this->addFlash('success', $this->trans('Successful update', 'Admin.Notifications.Success'));
+            $this->addFlash('success', $this->trans('Successful update.', 'Admin.Notifications.Success'));
         } catch (PositionUpdateException $e) {
             $errors = [$e->toArray()];
             $this->flashErrors($errors);
@@ -949,7 +945,7 @@ class CmsPageController extends FrameworkBundleAdminController
 
             $this->addFlash(
                 'success',
-                $this->trans('Successful deletion', 'Admin.Notifications.Success')
+                $this->trans('Successful deletion.', 'Admin.Notifications.Success')
             );
         } catch (Exception $exception) {
             $this->addFlash(
@@ -1110,7 +1106,7 @@ class CmsPageController extends FrameworkBundleAdminController
     {
         return [
             CmsPageNotFoundException::class => $this->trans(
-                'The object cannot be loaded (or found).',
+                'The object cannot be loaded (or found)',
                 'Admin.Notifications.Error'
             ),
             CannotToggleCmsPageException::class => $this->trans(
@@ -1199,7 +1195,7 @@ class CmsPageController extends FrameworkBundleAdminController
                 ),
             ],
             CmsPageCategoryNotFoundException::class => $this->trans(
-                'The object cannot be loaded (or found).',
+                'The object cannot be loaded (or found)',
                 'Admin.Notifications.Error'
             ),
             CannotToggleCmsPageCategoryStatusException::class => $this->trans(

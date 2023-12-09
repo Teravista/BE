@@ -42,7 +42,7 @@ use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
 use PrestaShop\PrestaShop\Core\Product\ProductPresentationSettings;
 use Product;
 use ProductAssembler;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatorInterface;
 use TaxConfiguration;
 use Tools;
 
@@ -151,15 +151,16 @@ class CartPresenter implements PresenterInterface
             }
         }
 
-        $rawProduct['price'] = Tools::ps_round($rawProduct['price'], Context::getContext()->getComputingPrecision());
-        $rawProduct['price_wt'] = Tools::ps_round($rawProduct['price_wt'], Context::getContext()->getComputingPrecision());
-
         if ($this->includeTaxes()) {
-            $rawProduct['price_amount'] = $rawProduct['price'] = $rawProduct['price_wt'];
-            $rawProduct['unit_price'] = $rawProduct['unit_price_tax_included'];
+            $rawProduct['price_amount'] = $rawProduct['price_wt'];
+            $rawProduct['price'] = $this->priceFormatter->format($rawProduct['price_wt']);
         } else {
-            $rawProduct['price_amount'] = $rawProduct['price_tax_exc'] = $rawProduct['price'];
-            $rawProduct['unit_price'] = $rawProduct['unit_price_tax_excluded'];
+            $rawProduct['price_amount'] = $rawProduct['price'];
+            $rawProduct['price'] = $rawProduct['price_tax_exc'] = $this->priceFormatter->format($rawProduct['price']);
+        }
+
+        if ($rawProduct['price_amount'] && $rawProduct['unit_price_ratio'] > 0) {
+            $rawProduct['unit_price'] = $rawProduct['price_amount'] / $rawProduct['unit_price_ratio'];
         }
 
         $rawProduct['total'] = $this->priceFormatter->format(
@@ -521,7 +522,7 @@ class CartPresenter implements PresenterInterface
             $defaultCountry = null;
 
             if (isset(Context::getContext()->cookie->id_country)) {
-                $defaultCountry = new Country((int) Context::getContext()->cookie->id_country);
+                $defaultCountry = new Country(Context::getContext()->cookie->id_country);
             }
 
             $deliveryOptionList = $cart->getDeliveryOptionList($defaultCountry);
@@ -546,9 +547,8 @@ class CartPresenter implements PresenterInterface
         $cartVouchers = $cart->getCartRules();
         $vouchers = [];
 
-        $cartHasTax = null === $cart->id ? false : $cart->getAverageProductsTaxRate() * 100;
+        $cartHasTax = null === $cart->id ? false : $cart::getTaxesAverageUsed($cart);
         $freeShippingAlreadySet = false;
-        /** @var array{id_cart_rule:int, name: string, code: string, reduction_percent: float, reduction_currency: int, free_shipping: bool, reduction_tax: bool, reduction_amount:float, value_real:float|int|string, value_tax_exc:float|int|string} $cartVoucher */
         foreach ($cartVouchers as $cartVoucher) {
             $vouchers[$cartVoucher['id_cart_rule']]['id_cart_rule'] = $cartVoucher['id_cart_rule'];
             $vouchers[$cartVoucher['id_cart_rule']]['name'] = $cartVoucher['name'];
@@ -571,7 +571,9 @@ class CartPresenter implements PresenterInterface
 
             $totalCartVoucherReduction = 0;
 
-            if ($this->cartVoucherHasFreeShippingOnly($cartVoucher)) {
+            if (!$this->cartVoucherHasPercentReduction($cartVoucher)
+                && !$this->cartVoucherHasAmountReduction($cartVoucher)
+                && !$this->cartVoucherHasGiftProductReduction($cartVoucher)) {
                 $freeShippingOnly = true;
                 if ($freeShippingAlreadySet) {
                     unset($vouchers[$cartVoucher['id_cart_rule']]);
@@ -617,7 +619,17 @@ class CartPresenter implements PresenterInterface
      *
      * @return bool
      */
-    private function cartVoucherHasPercentReduction(array $cartVoucher): bool
+    private function cartVoucherHasFreeShipping($cartVoucher)
+    {
+        return !empty($cartVoucher['free_shipping']);
+    }
+
+    /**
+     * @param array $cartVoucher
+     *
+     * @return bool
+     */
+    private function cartVoucherHasPercentReduction($cartVoucher)
     {
         return isset($cartVoucher['reduction_percent'])
             && $cartVoucher['reduction_percent'] > 0
@@ -629,7 +641,7 @@ class CartPresenter implements PresenterInterface
      *
      * @return bool
      */
-    private function cartVoucherHasAmountReduction(array $cartVoucher): bool
+    private function cartVoucherHasAmountReduction($cartVoucher)
     {
         return isset($cartVoucher['reduction_amount']) && $cartVoucher['reduction_amount'] > 0;
     }
@@ -639,21 +651,9 @@ class CartPresenter implements PresenterInterface
      *
      * @return bool
      */
-    private function cartVoucherHasGiftProductReduction(array $cartVoucher): bool
+    private function cartVoucherHasGiftProductReduction($cartVoucher)
     {
         return !empty($cartVoucher['gift_product']);
-    }
-
-    /**
-     * @param array $cartVoucher
-     *
-     * @return bool
-     */
-    private function cartVoucherHasFreeShippingOnly(array $cartVoucher): bool
-    {
-        return !$this->cartVoucherHasPercentReduction($cartVoucher)
-            && !$this->cartVoucherHasAmountReduction($cartVoucher)
-            && !$this->cartVoucherHasGiftProductReduction($cartVoucher);
     }
 
     /**
@@ -693,7 +693,6 @@ class CartPresenter implements PresenterInterface
             $this->settings->stock_management_enabled = Configuration::get('PS_STOCK_MANAGEMENT');
             $this->settings->showPrices = Configuration::showPrices();
             $this->settings->showLabelOOSListingPages = (bool) Configuration::get('PS_SHOW_LABEL_OOS_LISTING_PAGES');
-            $this->settings->lastRemainingItems = (int) Configuration::get('PS_LAST_QTIES');
         }
 
         return $this->settings;

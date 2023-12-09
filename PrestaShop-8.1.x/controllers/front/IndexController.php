@@ -25,7 +25,6 @@
  */
 class IndexControllerCore extends FrontController
 {
-    /** @var string */
     public $php_self = 'index';
 
     /**

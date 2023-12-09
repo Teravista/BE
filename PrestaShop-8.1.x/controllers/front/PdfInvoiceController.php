@@ -25,19 +25,14 @@
  */
 class PdfInvoiceControllerCore extends FrontController
 {
-    /** @var string */
     public $php_self = 'pdf-invoice';
-    /** @var bool */
     protected $display_header = false;
-    /** @var bool */
     protected $display_footer = false;
-    /** @var bool */
+
     public $content_only = true;
-    /** @var string */
-    protected $template = '';
+
+    protected $template;
     public $filename;
-    /** @var Order */
-    public $order;
 
     public function postProcess()
     {
@@ -69,11 +64,6 @@ class PdfInvoiceControllerCore extends FrontController
         $this->order = $order;
     }
 
-    /**
-     * @return bool|void
-     *
-     * @throws PrestaShopException
-     */
     public function display()
     {
         $order_invoice_list = $this->order->getInvoicesCollection();

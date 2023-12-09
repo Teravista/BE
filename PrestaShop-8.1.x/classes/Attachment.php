@@ -111,7 +111,7 @@ class AttachmentCore extends ObjectModel
     public function delete()
     {
         if (file_exists(_PS_DOWNLOAD_DIR_ . $this->file)) {
-            @unlink(_PS_DOWNLOAD_DIR_ . basename($this->file));
+            @unlink(_PS_DOWNLOAD_DIR_ . $this->file);
         }
 
         $sql = new DbQuery();
@@ -262,7 +262,7 @@ class AttachmentCore extends ObjectModel
      * and remove eventual previous association.
      *
      * @param int $idProduct Product ID
-     * @param mixed $array Attachment IDs
+     * @param array $array Attachment IDs
      *
      * @return bool Whether the attachments have been successfully associated with the Product
      */

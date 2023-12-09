@@ -123,7 +123,7 @@ class OrderReturnLazyArray extends AbstractLazyArray
      */
     public function getReturnDate()
     {
-        return Tools::displayDate($this->orderReturn['date_add'], false);
+        return Tools::displayDate($this->orderReturn['date_add'], null, false);
     }
 
     /**
