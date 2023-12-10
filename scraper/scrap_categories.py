@@ -6,6 +6,57 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
+
+def format_subcategories(subcategories):
+    formatted_subcategories = []
+    for category, subcategory in subcategories:
+        if subcategory != "":
+            formatted_subcategory = subcategory.lower()
+            formatted_subcategory = formatted_subcategory[0].upper() + formatted_subcategory[1:]
+            formatted_subcategories.append((category, formatted_subcategory))
+    return formatted_subcategories
+
+
+
+def scrap_subcategories(driver, categories, url_file):
+    with open(url_file, 'r') as file:
+        urls = file.readlines()
+
+    subcategories = []
+    idx = 0
+    # Process each URL
+    for url in urls:
+        url = url.strip()  # Remove any leading/trailing whitespace
+        driver.get(url)
+
+        category_link_elements = WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "a.category-nav-link"))
+        )
+
+        # Extract the text from each category's span element
+        for element in category_link_elements:
+            category_name = element.find_element(By.CSS_SELECTOR, 'span.nav-link-text').text
+            # Append both the category and the subcategory as a tuple
+            subcategories.append((categories[idx], category_name))
+
+        idx += 1
+    subcategories = format_subcategories(subcategories)
+    return subcategories
+
+
+def create_file(categories, subcategories, subsubcategories):
+    # Save the categories to a file
+    with open('../scrapped_data/categories.txt', 'w', encoding='utf-8') as file:
+        for category in categories:
+            file.write(category + '\n')
+
+    # Save the subcategories and subsubcategories to another file
+    with open('../scrapped_data/subcategories.txt', 'w', encoding='utf-8') as file:
+        for category, subcategory in subcategories:
+            file.write(f"{subcategory}, {category}\n")
+        for category, subsubcategory in subsubcategories:
+            file.write(f"{subsubcategory}, {category}\n")
+
 def main():
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service)
@@ -14,31 +65,57 @@ def main():
     try:
         driver.get(url)
 
-        # Closing the cookie consent banner
+        # Closing cookie button
+
+        # Wait for the element with the class .cmplz-close to be present and clickable
         close_button = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, ".cmplz-close"))
         )
+        # Click the button
         close_button.click()
 
         # Opening the category list
         hover_element = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, ".menu-opener"))
         )
+        # Hover over the element to trigger any interactions
         ActionChains(driver).move_to_element(hover_element).perform()
 
-        # Wait for the category list to load
-        category_elements = WebDriverWait(driver, 10).until(
-            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "#menu-kategorie li a.woodmart-nav-link"))
+        # Wait for the category list to load after the hover action
+        categories = WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "#menu-kategorie .nav-link-text"))
         )
 
-        # Extract and print the text and link from each category
-        for element in category_elements:
-            category_name = element.find_element(By.CSS_SELECTOR, '.nav-link-text').text
-            category_link = element.get_attribute('href')
-            print(f"Category: {category_name}, Link: {category_link}")
+        # Extract and store the text from each category
+        categories = [category.text for category in categories]
+
+        # Remove the fifth element
+        if len(categories) >= 6:
+            categories.pop(5)  # Index 4 corresponds to the fifth element
+
+        print(categories)
+        # Keep only the last 9 categories - the ones with subcategories
+        last_9_categories = categories[-8:]
+
+        # Call the scrap_subcategories function with the last 9 categories
+        subcategories = scrap_subcategories(driver, last_9_categories, 'subcategories.txt')
+
+        print(subcategories)
+
+        subcategories_with_subcategories = [
+            "Niwelatory i lasery", "Narzędzia ogrodowe", "Narzędzia ręczne", "Części do przyłbic",
+            "Przyłbice spawalnicze", "Sprzęt asekuracyjny", "Tablice i naklejki bhp", "Szczotki druciane"
+        ]
+
+        subsubcategories = scrap_subcategories(driver, subcategories_with_subcategories, 'subsubcategories.txt')
+        print(subsubcategories)
+
+        create_file(categories, subcategories, subsubcategories)
+
 
     finally:
         driver.quit()
+
 
 if __name__ == "__main__":
     main()
