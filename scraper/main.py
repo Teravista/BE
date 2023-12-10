@@ -87,11 +87,13 @@ def scrape_product_page(driver, product_page_url):
     finally:
         return [product_price, specifications, specifications_html]
 
+
 def sanitize_filename(filename):
     invalid_chars = '<>:"/\\|?*'
     for char in invalid_chars:
         filename = filename.replace(char, '')
     return filename
+
 
 def download_image(url, save_path):
     response = requests.get(url)
@@ -100,7 +102,7 @@ def download_image(url, save_path):
             file.write(response.content)
 
 
-def scrap_products_from_category(url):
+def scrap_products_from_category(url, product_count):
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service)
     xml_file_path = '../scrapped_data/products.xml'
@@ -109,7 +111,7 @@ def scrap_products_from_category(url):
         driver.get(url)
 
         # Fetch the total number of products
-        product_elements = WebDriverWait(driver, 10).until(
+        product_elements = WebDriverWait(driver, 5).until(
             EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div.product-element-top"))
         )
         total_products = len(product_elements)
@@ -119,7 +121,7 @@ def scrap_products_from_category(url):
             driver.get(url)
 
             # Re-fetch the list of products
-            product_elements = WebDriverWait(driver, 10).until(
+            product_elements = WebDriverWait(driver, 5).until(
                 EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div.product-element-top"))
             )
 
@@ -133,9 +135,18 @@ def scrap_products_from_category(url):
             srcset = product.find_element(By.CSS_SELECTOR,
                                           'a img').get_attribute('srcset')
             srcset = srcset.split(',')
+            error = 0
             for i in range(len(srcset)):
-                srcset[i] = srcset[i].split(' ')
-                srcset[i] = srcset[i][-2]
+                split_list = srcset[i].split(' ')
+                if len(split_list) >= 2:
+                    srcset[i] = split_list[-2]
+                else:
+                    error = 1
+                    break
+
+            if error == 1:
+                continue
+
             photo_link_1 = srcset[0]
             photo_link_2 = srcset[len(srcset) - 2]
             file_name = sanitize_filename(product_name)
@@ -144,7 +155,7 @@ def scrap_products_from_category(url):
             # print(f"Product Name: {product_name}, Page Link: {product_page_link}")
 
             details = scrape_product_page(driver, product_page_link)
-            if (details[0] != ""):
+            if details[0] != "":
                 product_details = {
                     'Name': product_name,
                     'Category': category,
@@ -155,7 +166,7 @@ def scrap_products_from_category(url):
                     'SpecificationsHTML': details[2],
                     'Link': product_page_link
                 }
-
+                product_count += 1
                 append_to_xml(product_details, xml_file_path)
 
 
@@ -163,6 +174,7 @@ def scrap_products_from_category(url):
     finally:
         driver.quit()
         print(f"saved category from url: {url} succesfully")
+        return product_count
 
 
 def scrap_category_name(url):
@@ -187,6 +199,7 @@ def scrap_category_name(url):
 
 
 def main():
+    product_count = 0
     # amount of pages for each category
     lengths = [3, 5, 9, 2, 31, 3, 5, 36, 13, 34, 3, 7]
     with open("main_categories_urls.txt", 'r') as file:
@@ -196,9 +209,10 @@ def main():
             url = url[:-2]
             length = lengths[idx]
             for i in range(length):
-                page = f"{url}/page/{i+1}"
-                scrap_products_from_category(page)
-        idx +=1
+                page = f"{url}/page/{i + 1}"
+                product_count = scrap_products_from_category(page, product_count)
+                print(f"Products scrapped total: {product_count}")
+            idx += 1
 
 
 if __name__ == "__main__":
