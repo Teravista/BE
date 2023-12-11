@@ -50,7 +50,7 @@ wheels/
 .installed.cfg
 *.egg
 
-scrapped_data/images/*
+scrapped_data/images_converted/*
 .idea/BE.iml
 .idea/inspectionProfiles/profiles_settings.xml
 .idea/misc.xml

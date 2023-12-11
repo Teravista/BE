@@ -1,6 +1,8 @@
-import json
+import io
+import random
 import xml.etree.ElementTree as ET
-from prestapyt import PrestaShopWebService, PrestaShopWebServiceDict, PrestaShopWebServiceError
+
+from prestapyt import PrestaShopWebServiceDict, PrestaShopWebServiceError
 
 
 def read_products_from_xml():
@@ -82,6 +84,7 @@ def print_all_categories(prestashop):
     # Process and print the categories
     for category in categories['categories']['category']:
         print(category)
+
 
 def print_all_products(prestashop):
     products = prestashop.get('products')
@@ -187,6 +190,66 @@ def add_subcategories(prestashop, categories_pairs, subcategories):
     return categories_pairs
 
 
+def add_photo(id_of_product, file_name, prestashop):
+    file_name = f"./scrapped_data/images/{file_name}"
+    fd = io.open(file_name, "rb")
+    content = fd.read()
+    fd.close()
+
+    prestashop.add(f'/images/products/{id_of_product}', files=[('image', file_name, content)])
+
+
+def add_product(product, prestashop, id_category):
+    quantity = random.randint(0, 10)
+    formatted_price = product['Price'].replace('.', '').replace(',', '.')
+
+    try:
+        product_schema = prestashop.get("products", options={"schema": "blank"})
+    except PrestaShopWebServiceError as e:
+        return {'error': str(e)}
+
+    del product_schema['product']["position_in_category"]
+    del product_schema['product']["associations"]["combinations"]
+
+    product_schema['product']['name']['language']['value'] = product['Name']
+    product_schema['product']['id_category_default'] = id_category
+    product_schema['product']['price'] = formatted_price
+    product_schema['product']['description_short']['language']['value'] = product['Specifications']
+    product_schema['product']['description']['language']['value'] = product['SpecificationsHTML']
+    product_schema["product"]["id_shop_default"] = 1
+    product_schema['product']['active'] = 1
+    product_schema["product"]["state"] = 1
+    product_schema["product"]["available_for_order"] = 1
+    product_schema["product"]["minimal_quantity"] = 1
+    product_schema["product"]["show_price"] = 1
+    product_schema['product']['associations']['stock_availables']['stock_available']['quantity'] = quantity
+    product_schema['product']["associations"]["categories"] = {
+        "category": [
+            {"id": 2},
+            {"id": id_category}
+        ],
+    }
+
+    added_product = prestashop.add("products", product_schema)["prestashop"]["product"]
+    product_id = added_product["id"]
+
+    add_photo(product_id, product['ImageName1'], prestashop)
+    add_photo(product_id, product['ImageName2'], prestashop)
+
+    schema_id = prestashop.search("stock_availables", options={"filter[id_product]": product_id})[0]
+    stock_available = prestashop.get("stock_availables", resource_id=schema_id)
+
+    stock_available["stock_available"]["quantity"] = random.randint(0, 10)
+    stock_available["stock_available"]["depends_on_stock"] = 0
+    prestashop.edit("stock_availables", stock_available)
+    return added_product
+
+
+def add_products(products, categories_pairs, prestashop):
+    # TODO implement
+    print("adding product")
+
+
 def main(mode):
     products = read_products_from_xml()
     categories = read_main_categories()
@@ -195,17 +258,28 @@ def main(mode):
 
     if mode == 1:
         # clearing shop
-        #clear_products(prestashop)
+        clear_products(prestashop)
         clear_categories(prestashop)
     elif mode == 2:
+        # adding categories
         categories_pairs = add_main_categories(prestashop, categories)
         categories_pairs = add_subcategories(prestashop, categories_pairs, subcategories)
-
         print(categories_pairs)
-        # TODO implement adding products
+
+        # adding products
+        # not implemented yet
+        # add_products(products, categories_pairs, prestashop)
     elif mode == 3:
+        # printing all categories and products avaliable in shop
         print_all_categories(prestashop)
         print_all_products(prestashop)
+    elif mode == 4:
+        # add test product
+        # need to change id of category for any existing one
+        print(add_product(products[0], prestashop, 397))
+        print("dupa")
+
+    #print(products[0])
 
 
 if __name__ == "__main__":
