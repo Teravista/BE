@@ -1,5 +1,5 @@
 import xml.etree.ElementTree as ET
-from prestapyt import PrestaShopWebService, PrestaShopWebServiceDict
+from prestapyt import PrestaShopWebService, PrestaShopWebServiceDict, PrestaShopWebServiceError
 
 
 def read_products_from_xml():
@@ -71,18 +71,52 @@ def init_presta_api_connection():
     with open('./api/key.txt', 'r', encoding='utf-8') as file:
         api_key = file.read().strip()
 
-    url = 'localhost:8080/api'
+    url = 'http://localhost:8080/api'
     return PrestaShopWebServiceDict(url, api_key)
 
 
-def clear_categories():
+def clear_categories(prestashop):
     print("clearing categories")
-    # TODO implement removing all categories
+    try:
+        # Pobieranie listy wszystkich kategorii
+        response = prestashop.get('categories')
+        categories = response['categories']['category']
+
+        for category in categories:
+            category_id = category['attrs']['id']
+
+            # Pomijanie kategorii głównej (zwykle o ID 2)
+            if category_id == '2':
+                continue
+
+            try:
+                # Usuwanie kategorii
+                prestashop.delete('categories', resource_ids=category_id)
+                print(f'Usunięto kategorię o ID: {category_id}')
+            except PrestaShopWebServiceError as e:
+                print(f'Błąd podczas usuwania kategorii o ID {category_id}: {e}')
+
+    except PrestaShopWebServiceError as e:
+        print(f'Nie można pobrać listy kategorii: {e}')
 
 
-def clear_products():
+def clear_products(prestashop):
     print("clearing products")
-    # TODO implement removing all products
+    try:
+        # Pobieranie listy wszystkich produktów
+        response = prestashop.get('products')
+        products = response['products']['product']
+
+        for product in products:
+            product_id = product['attrs']['id']
+            try:
+                # Usuwanie produktu
+                prestashop.delete('products', resource_ids=product_id)
+                print(f'Usunięto produkt o ID: {product_id}')
+            except PrestaShopWebServiceError as e:
+                print(f'Błąd podczas usuwania produktu o ID {product_id}: {e}')
+    except PrestaShopWebServiceError as e:
+        print(f'Nie można pobrać listy produktów: {e}')
 
 
 def add_category(prestashop, parent_id, category_name):
@@ -132,19 +166,24 @@ def add_subcategories(prestashop, categories_pairs, subcategories):
     return categories_pairs
 
 
-def main():
+def main(mode):
     products = read_products_from_xml()
     categories = read_main_categories()
     subcategories = read_subcategories()
     prestashop = init_presta_api_connection()
 
-    categories_pairs = add_main_categories(prestashop, categories)
-    categories_pairs = add_subcategories(prestashop, categories_pairs, subcategories)
+    if mode == 1:
+        # clearing shop
+        clear_products(prestashop)
+        clear_categories(prestashop)
+    elif mode == 2:
+        categories_pairs = add_main_categories(prestashop, categories)
+        categories_pairs = add_subcategories(prestashop, categories_pairs, subcategories)
 
-    print(categories_pairs)
+        print(categories_pairs)
 
-    # TODO implement adding products
+        # TODO implement adding products
 
 
 if __name__ == "__main__":
-    main()
+    main(1)
