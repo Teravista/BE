@@ -66,10 +66,20 @@ def read_subcategories():
     return subcategories
 
 
+def init_presta_api_connection():
+    with open('./api/key.txt', 'r', encoding='utf-8') as file:
+        api_key = file.read().strip()
+
+    url = 'localhost:8080/api'
+    return PrestaShopWebServiceDict(url, api_key)
+
+
+
 def main():
     products = read_products_from_xml()
     categories = read_main_categories()
     subcategories = read_subcategories()
+    prestashop = init_presta_api_connection()
 
 
 if __name__ == "__main__":
