@@ -76,6 +76,18 @@ def init_presta_api_connection():
     return PrestaShopWebServiceDict(url, api_key)
 
 
+def print_all_categories(prestashop):
+    categories = prestashop.get('categories')
+
+    # Process and print the categories
+    for category in categories['categories']['category']:
+        print(category)
+
+def print_all_products(prestashop):
+    products = prestashop.get('products')
+    print(products)
+
+
 def clear_categories(prestashop):
     print("clearing categories")
     try:
@@ -96,6 +108,8 @@ def clear_categories(prestashop):
                 print(f'Usunięto kategorię o ID: {category_id}')
             except PrestaShopWebServiceError as e:
                 print(f'Błąd podczas usuwania kategorii o ID {category_id}: {e}')
+                # podczas usuwania podkategorii, których nadkategoria została usunięta będzie się pojawiał ten błąd, ale
+                # podkategoria została już usunięta i wszystko dobrze działa
 
     except PrestaShopWebServiceError as e:
         print(f'Nie można pobrać listy kategorii: {e}')
@@ -181,7 +195,7 @@ def main(mode):
 
     if mode == 1:
         # clearing shop
-        clear_products(prestashop)
+        #clear_products(prestashop)
         clear_categories(prestashop)
     elif mode == 2:
         categories_pairs = add_main_categories(prestashop, categories)
@@ -190,9 +204,9 @@ def main(mode):
         print(categories_pairs)
         # TODO implement adding products
     elif mode == 3:
-        response = prestashop.get('categories')
-        print(response)
+        print_all_categories(prestashop)
+        print_all_products(prestashop)
 
 
 if __name__ == "__main__":
-    main(2)
+    main(1)
