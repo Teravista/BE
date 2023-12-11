@@ -1,3 +1,4 @@
+import json
 import xml.etree.ElementTree as ET
 from prestapyt import PrestaShopWebService, PrestaShopWebServiceDict, PrestaShopWebServiceError
 
@@ -42,8 +43,8 @@ def read_main_categories():
                 categories.append(category)
 
     # Wyświetlamy odczytane kategorie
-    for category in categories:
-        print(category)
+    # for category in categories:
+    #     print(category)
 
     return categories
 
@@ -61,8 +62,8 @@ def read_subcategories():
             subcategories.append((parts[1], parts[0]))
 
     # Wyświetlamy odczytane pary kategorii i podkategorii
-    for subcategory in subcategories:
-        print(subcategory)
+    # for subcategory in subcategories:
+    #     print(subcategory)
 
     return subcategories
 
@@ -91,7 +92,7 @@ def clear_categories(prestashop):
 
             try:
                 # Usuwanie kategorii
-                prestashop.delete('categories', resource_ids=category_id)
+                prestashop.delete('categories', category_id)
                 print(f'Usunięto kategorię o ID: {category_id}')
             except PrestaShopWebServiceError as e:
                 print(f'Błąd podczas usuwania kategorii o ID {category_id}: {e}')
@@ -131,9 +132,15 @@ def add_category(prestashop, parent_id, category_name):
         }
     }
     result = prestashop.add('categories', new_category)
-    new_category_id = result['category']['id']
+    print(result)  # Dodane do wypisania odpowiedzi
 
-    return new_category_id
+    # Odczytywanie ID nowo utworzonej kategorii
+    try:
+        new_category_id = result['prestashop']['category']['id']
+        return new_category_id
+    except KeyError:
+        print("Nie można odnaleźć klucza 'category' w odpowiedzi")
+        return None
 
 
 def add_main_categories(prestashop, categories):
@@ -181,9 +188,11 @@ def main(mode):
         categories_pairs = add_subcategories(prestashop, categories_pairs, subcategories)
 
         print(categories_pairs)
-
         # TODO implement adding products
+    elif mode == 3:
+        response = prestashop.get('categories')
+        print(response)
 
 
 if __name__ == "__main__":
-    main(1)
+    main(2)
