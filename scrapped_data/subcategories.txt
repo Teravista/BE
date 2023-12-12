@@ -20,7 +20,6 @@ Preparaty do stali nierdzewnej i kwasoodpornej, Chemia spawalnicza
 Preparaty do aluminium, Chemia spawalnicza
 Preparaty do powierzchni metalowych, Chemia spawalnicza
 Metale w aerozolu, Chemia spawalnicza
-Inne, Chemia spawalnicza
 Ochrona dróg oddechowych, Środki ochrony osobistej
 Przyłbice spawalnicze, Środki ochrony osobistej
 Sprzęt asekuracyjny, Środki ochrony osobistej
@@ -37,7 +36,6 @@ Rękawice robocze i ochronne, Środki ochrony osobistej
 Obuwie ochronne i spawalnicze, Środki ochrony osobistej
 Zasłony i ekrany spawalnicze, Środki ochrony osobistej
 Skrzynki do przechowywania, Narzędzia
-Wózki paletowe, Narzędzia
 Narzędzia dla instalatorów, Narzędzia
 Narzędzia ręczne, Narzędzia
 Technika podnoszenia, Narzędzia
@@ -59,7 +57,6 @@ Klucze udarowe, Elektronarzędzia
 Młotowiertarki, Elektronarzędzia
 Narzędzia ogrodowe, Elektronarzędzia
 Narzędzia wielofunkcyjne, Elektronarzędzia
-Pilarki, Elektronarzędzia
 Przecinarki, Elektronarzędzia
 Radia, Elektronarzędzia
 Szlifierki, Elektronarzędzia
@@ -68,58 +65,38 @@ Wiertarko-wkrętarki, Elektronarzędzia
 Wyrzynarki, Elektronarzędzia
 Zestaw combo, Elektronarzędzia
 Niwelatory i lasery, Elektronarzędzia
-Inne, Elektronarzędzia
 Wiertarki magnetyczne, Elektronarzędzia
-Narzędzia pneumatyczne, Pneumatyka
-Sprężarki tłokowe, Pneumatyka
-Sprężarki śrubowe, Pneumatyka
-Agregaty jednofazowe, Agregaty prądotwórcze
-Agregaty trójfazowe, Agregaty prądotwórcze
-Agregaty z modułem spawalniczym, Agregaty prądotwórcze
-Motopompy oraz dmuchawy, Agregaty prądotwórcze
-Akcesoria do niwelatorów, Niwelatory i lasery
 Dalmierze laserowe, Niwelatory i lasery
-Elektroniczne, Niwelatory i lasery
 Lasery i multi-lasery krzyżow, Niwelatory i lasery
 Lasery i multi-lasery krzyżowe, Niwelatory i lasery
-Niwelatory laserowe, Niwelatory i lasery
 Niwelatory laserowe, liniowe – rurowe, Niwelatory i lasery
 Niwelatory laserowe i rotacyjne, Niwelatory i lasery
 Optyczne, Niwelatory i lasery
-Pionowniki laserowe, Niwelatory i lasery
-Poziomice elektroniczne, Niwelatory i lasery
 Dmuchawy akumulatorowe, Narzędzia ogrodowe
 Kosiarki i podkaszarki, Narzędzia ogrodowe
 Myjki wysokociśnieniowe, Narzędzia ogrodowe
 Nożyce do żywopłotu, Narzędzia ogrodowe
-Pilarki, Narzędzia ogrodowe
 Narzędzia pomiarowe, Narzędzia ręczne
 Podnośniki hydrauliczne, Narzędzia ręczne
 Zestawy kluczy, Narzędzia ręczne
 Zestawy nasadek, Narzędzia ręczne
 A20, Części do przyłbic
-Albatros, Części do przyłbic
 Epr-x1, Części do przyłbic
-Origo, Części do przyłbic
 Powerweld, Części do przyłbic
 Sentinel a60/a60 air, Części do przyłbic
 3m 9100, Części do przyłbic
-Eco/aristo air, Części do przyłbic
 Magnum, Części do przyłbic
 Savage a40 air, Części do przyłbic
 Eco-arc ii / f10, Części do przyłbic
 F20/f20 air, Części do przyłbic
 Aristo tech hd, Części do przyłbic
-F10, Części do przyłbic
 G30/g30 air, Części do przyłbic
 G40/g40 air, Części do przyłbic
 G50/g50 air, Części do przyłbic
-New-tech adc plus, Części do przyłbic
 Papr air, Części do przyłbic
 Savage a40, Części do przyłbic
 Sentinel a50/a50 air, Części do przyłbic
 Warrior tech, Części do przyłbic
-Nawiew esab epr-x1, Przyłbice spawalnicze
 Przyłbice z nawiewem zestaw, Przyłbice spawalnicze
 Przyłbice automatyczne, Przyłbice spawalnicze
 Przyłbice pasywne, Przyłbice spawalnicze
