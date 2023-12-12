@@ -102,7 +102,7 @@ def clear_categories(prestashop):
             category_id = category['attrs']['id']
 
             # Pomijanie kategorii głównej (zwykle o ID 2)
-            if category_id == '2':
+            if category_id == '2' or category_id == '1':
                 continue
 
             try:
@@ -191,7 +191,7 @@ def add_subcategories(prestashop, categories_pairs, subcategories):
 
 
 def add_photo(id_of_product, file_name, prestashop):
-    file_name = f"./scrapped_data/images/{file_name}"
+    file_name = f"./scrapped_data/images_converted/{file_name}"
     fd = io.open(file_name, "rb")
     content = fd.read()
     fd.close()
@@ -245,9 +245,27 @@ def add_product(product, prestashop, id_category):
     return added_product
 
 
-def add_products(products, categories_pairs, prestashop):
-    # TODO implement
+def find_index_by_name(pairs, name):
+    for pair in pairs:
+        if pair[0] == name:
+            return pair[1]
+    return None
+
+def add_products(products, categories_pairs, prestashop, amount):
     print("adding product")
+    products_to_add = products[:amount]
+    for prod in products_to_add:
+        category = prod['Category']
+        idx = find_index_by_name(categories_pairs, category)
+        if idx is None:
+            formatted_category = category.lower()
+            formatted_category = formatted_category[0].upper() + formatted_category[1:]
+            idx = find_index_by_name(categories_pairs, formatted_category)
+            if idx is None:
+                continue
+
+        add_product(prod, prestashop, idx)
+
 
 
 def main(mode):
@@ -268,7 +286,8 @@ def main(mode):
 
         # adding products
         # not implemented yet
-        # add_products(products, categories_pairs, prestashop)
+        amount = 10
+        add_products(products, categories_pairs, prestashop, amount)
     elif mode == 3:
         # printing all categories and products avaliable in shop
         print_all_categories(prestashop)
@@ -276,8 +295,9 @@ def main(mode):
     elif mode == 4:
         # add test product
         # need to change id of category for any existing one
-        print(add_product(products[0], prestashop, 397))
+        print(add_product(products[0], prestashop, 155))
         print("dupa")
+
 
     #print(products[0])
 
