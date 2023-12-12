@@ -1,5 +1,6 @@
 import io
 import random
+import re
 import xml.etree.ElementTree as ET
 
 from prestapyt import PrestaShopWebServiceDict, PrestaShopWebServiceError
@@ -199,10 +200,36 @@ def add_photo(id_of_product, file_name, prestashop):
     prestashop.add(f'/images/products/{id_of_product}', files=[('image', file_name, content)])
 
 
-def add_product(product, prestashop, id_category):
-    quantity = random.randint(0, 10)
-    formatted_price = product['Price'].replace('.', '').replace(',', '.')
+def validate(product):
+    short_description = product['Specifications']
+    if short_description is None:
+        short_description = " "
+        product['Specifications'] = short_description
+    weight_match = re.search(r'Waga:\s*(\d+,\d+|\d+)\s*kg', short_description)
+    weight = float(weight_match.group(1).replace(',', '.')) if weight_match else None
 
+    if len(short_description) >= 799:
+        short_description = short_description[:799]
+        product['Specification'] = short_description
+    long_description = product['SpecificationsHTML']
+    if long_description is None:
+        long_description = " "
+        product['Specifications'] = long_description
+    if weight is None:
+        weight_match = re.search(r'Waga:\s*(\d+,\d+|\d+)\s*kg', long_description)
+        weight = float(weight_match.group(1).replace(',', '.')) if weight_match else None
+    if len(long_description) >= 21843:
+        long_description = long_description[:21843]
+        product['SpecificationHTML'] = long_description
+    if weight is None:
+        weight = random.randint(1, 60) / 10
+    product['Weight'] = weight
+    return product
+
+
+def add_product(product, prestashop, id_category):
+    formatted_price = product['Price'].replace('.', '').replace(',', '.')
+    product = validate(product)
     try:
         product_schema = prestashop.get("products", options={"schema": "blank"})
     except PrestaShopWebServiceError as e:
@@ -210,6 +237,8 @@ def add_product(product, prestashop, id_category):
 
     del product_schema['product']["position_in_category"]
     del product_schema['product']["associations"]["combinations"]
+
+    print(product['Name'])
 
     product_schema['product']['name']['language']['value'] = product['Name']
     product_schema['product']['id_category_default'] = id_category
@@ -219,10 +248,10 @@ def add_product(product, prestashop, id_category):
     product_schema["product"]["id_shop_default"] = 1
     product_schema['product']['active'] = 1
     product_schema["product"]["state"] = 1
+    product_schema["product"]["weight"] = product['Weight']
     product_schema["product"]["available_for_order"] = 1
     product_schema["product"]["minimal_quantity"] = 1
     product_schema["product"]["show_price"] = 1
-    product_schema['product']['associations']['stock_availables']['stock_available']['quantity'] = quantity
     product_schema['product']["associations"]["categories"] = {
         "category": [
             {"id": 2},
@@ -230,19 +259,23 @@ def add_product(product, prestashop, id_category):
         ],
     }
 
-    added_product = prestashop.add("products", product_schema)["prestashop"]["product"]
-    product_id = added_product["id"]
+    try:
+        added_product = prestashop.add("products", product_schema)["prestashop"]["product"]
+        product_id = added_product["id"]
 
-    add_photo(product_id, product['ImageName1'], prestashop)
-    add_photo(product_id, product['ImageName2'], prestashop)
+        add_photo(product_id, product['ImageName1'], prestashop)
+        add_photo(product_id, product['ImageName2'], prestashop)
 
-    schema_id = prestashop.search("stock_availables", options={"filter[id_product]": product_id})[0]
-    stock_available = prestashop.get("stock_availables", resource_id=schema_id)
+        schema_id = prestashop.search("stock_availables", options={"filter[id_product]": product_id})[0]
+        stock_available = prestashop.get("stock_availables", resource_id=schema_id)
 
-    stock_available["stock_available"]["quantity"] = random.randint(0, 10)
-    stock_available["stock_available"]["depends_on_stock"] = 0
-    prestashop.edit("stock_availables", stock_available)
-    return added_product
+        stock_available["stock_available"]["quantity"] = random.randint(0, 10)
+        stock_available["stock_available"]["depends_on_stock"] = 0
+        prestashop.edit("stock_availables", stock_available)
+        return added_product
+    except PrestaShopWebServiceError as e:
+        error_message = str(e)
+        return error_message
 
 
 def find_index_by_name(pairs, name):
@@ -250,6 +283,7 @@ def find_index_by_name(pairs, name):
         if pair[0] == name:
             return pair[1]
     return None
+
 
 def add_products(products, categories_pairs, prestashop, amount):
     print("adding product")
@@ -262,10 +296,10 @@ def add_products(products, categories_pairs, prestashop, amount):
             formatted_category = formatted_category[0].upper() + formatted_category[1:]
             idx = find_index_by_name(categories_pairs, formatted_category)
             if idx is None:
+                print(f'couldnt find category for category name: {category}')
                 continue
 
         add_product(prod, prestashop, idx)
-
 
 
 def main(mode):
@@ -275,7 +309,7 @@ def main(mode):
     prestashop = init_presta_api_connection()
 
     if mode == 1:
-        # clearing shop
+        # clearing shop - doesn't work when there is only one product in shop.
         clear_products(prestashop)
         clear_categories(prestashop)
     elif mode == 2:
@@ -286,21 +320,13 @@ def main(mode):
 
         # adding products
         # not implemented yet
-        amount = 10
+        amount = 1806
         add_products(products, categories_pairs, prestashop, amount)
     elif mode == 3:
         # printing all categories and products avaliable in shop
         print_all_categories(prestashop)
         print_all_products(prestashop)
-    elif mode == 4:
-        # add test product
-        # need to change id of category for any existing one
-        print(add_product(products[0], prestashop, 155))
-        print("dupa")
-
-
-    #print(products[0])
 
 
 if __name__ == "__main__":
-    main(1)
+    main(2)
