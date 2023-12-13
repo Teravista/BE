@@ -57,6 +57,30 @@ def create_file(categories, subcategories, subsubcategories):
         for category, subsubcategory in subsubcategories:
             file.write(f"{subsubcategory}, {category}\n")
 
+
+def remove_unnecesary_categories(subcategories, subsubcategories):
+    unnecesary_categories = ['Akcesoria do niwelatorów', 'Albatros', 'Eco/aristo air', 'Elektroniczne', 'F10', 'Inne',
+                             'Inne', 'Nawiew esab epr-x1', 'New-tech adc plus', 'Niwelatory laserowe', 'Origo',
+                             'Pilarki', 'Pionowniki laserowe', 'Poziomice elektroniczne', 'Wózki paletowe']
+
+    # Usuń krotki zawierające niepotrzebne podkategorie
+    updated_subcategories = [subcat for subcat in subcategories if subcat[1] not in unnecesary_categories]
+
+    # Zaktualizuj listę niepotrzebnych kategorii, usuwając te, które faktycznie zostały znalezione
+    updated_unnecessary_categories = [cat for cat in unnecesary_categories if
+                                      not any(cat == subcat[1] for subcat in subcategories)]
+
+    # Usuń krotki zawierające niepotrzebne podkategorie
+    updated_subsubcategories = [subcat for subcat in subsubcategories if subcat[1] not in unnecesary_categories]
+
+    # Zaktualizuj listę niepotrzebnych kategorii, usuwając te, które faktycznie zostały znalezione
+    updated_unnecessary_categories = [cat for cat in updated_unnecessary_categories if
+                                      not any(cat == subcat[1] for subcat in subsubcategories)]
+
+    print(updated_unnecessary_categories)
+    return updated_subcategories, updated_subsubcategories
+
+
 def main():
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service)
@@ -92,10 +116,12 @@ def main():
         # Remove the fifth element
         if len(categories) >= 6:
             categories.pop(5)  # Index 4 corresponds to the fifth element
+            categories.pop(11)
+            categories.pop(10)
 
         print(categories)
         # Keep only the last 9 categories - the ones with subcategories
-        last_9_categories = categories[-8:]
+        last_9_categories = categories[-6:]
 
         # Call the scrap_subcategories function with the last 9 categories
         subcategories = scrap_subcategories(driver, last_9_categories, 'subcategories.txt')
@@ -109,7 +135,7 @@ def main():
 
         subsubcategories = scrap_subcategories(driver, subcategories_with_subcategories, 'subsubcategories.txt')
         print(subsubcategories)
-
+        subcategories, subsubcategories = remove_unnecesary_categories(subcategories, subsubcategories)
         create_file(categories, subcategories, subsubcategories)
 
 
