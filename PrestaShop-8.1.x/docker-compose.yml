@@ -22,6 +22,9 @@ services:
     prestashop:
         image: prestashop/prestashop:1.7.8
         container_name: prestashop
+        build:
+            context: .
+            dockerfile: dockerfile
         environment:
             PS_DEV_MODE: 1
             DISABLE_MAKE: ${DISABLE_MAKE:-0}
@@ -29,6 +32,7 @@ services:
             PS_FOLDER_INSTALL: ${PS_FOLDER_INSTALL:-install-devdev}
             PS_FOLDER_ADMIN: ${PS_FOLDER_ADMIN:-admin-devdev}
             PS_DOMAIN: ${PS_DOMAIN:-localhost:8080}
+            PS_DOMAIN_SSL: ${PS_DOMAIN_SSL:-localhost:443}
             DB_SERVER: mysql
             DB_PASSWD: ${DB_PASSWD:-prestashop}
             DB_NAME: ${DB_NAME:-prestashop}
@@ -37,11 +41,17 @@ services:
             PS_LANGUAGE: ${PS_LANGUAGE:-pl}
             ADMIN_MAIL: ${ADMIN_MAIL:-demo@prestashop.com}
             ADMIN_PASSWD: ${ADMIN_PASSWD:-12345678}
+            PS_ENABLE_SSL: 1
+            PS_SSL_ENABLED_EVERYWHERE: 1
         ports:
             - 8080:80
+            - 443:443
         networks:
             - prestashop
         volumes:
+            - ./certs/sslcert.crt:/etc/ssl/certs/sslcert.crt
+            - ./certs/sslcert.crt:/usr/local/share/ca-certificates/sslcert.crt
+            - ./certs/sslcert.key:/etc/ssl/private/sslcert.key
             - ./:/var/www/html/:delegated
 
     phpmyadmin:
