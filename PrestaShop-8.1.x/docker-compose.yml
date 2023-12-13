@@ -7,21 +7,21 @@ volumes:
 services:
     mysql:
         image: mysql:5.7
-        container_name: prestashop-db
+        container_name: mysqlDB
         environment:
             MYSQL_ROOT_PASSWORD: prestashop
             MYSQL_DATABASE: prestashop
-            MYSQL_ROOT_HOST: '%'
         ports:
-            - 3306:3306
+            - "3306"
         networks:
             - prestashop
         volumes:
             - ./mysql:/var/lib/mysql:delegated
+        restart: always
     
     prestashop:
         image: prestashop/prestashop:1.7.8
-        container_name: prestashop
+        container_name: SpawaniePrestashop
         build:
             context: .
             dockerfile: dockerfile
@@ -41,11 +41,11 @@ services:
             PS_LANGUAGE: ${PS_LANGUAGE:-pl}
             ADMIN_MAIL: ${ADMIN_MAIL:-demo@prestashop.com}
             ADMIN_PASSWD: ${ADMIN_PASSWD:-12345678}
-            PS_ENABLE_SSL: 1
+            PS_ENABLE_SSL: ${PS_ENABLE_SSL:-1}
             PS_SSL_ENABLED_EVERYWHERE: 1
         ports:
-            - 8080:80
-            - 443:443
+            - "8080:80"
+            - "443:443"
         networks:
             - prestashop
         volumes:
