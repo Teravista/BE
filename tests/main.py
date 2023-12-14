@@ -1,5 +1,6 @@
 import random
 import time
+import re
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -11,37 +12,32 @@ from selenium.webdriver.common.keys import Keys
 
 def a_add_products(category):
     try:
+        collapse_menu = driver.find_element(by=By.CLASS_NAME, value="top-menu")
         action = ActionChains(driver=driver)
-        driver.get("http://localhost:8080/index.php?id_category=2&controller=category")
+        action.move_to_element(collapse_menu).perform()
         cat1 = driver.find_element(by=By.LINK_TEXT, value=category)
         cat1.click()
 
         number_of_products = 0
         needed_number_of_products = 5
-        while(number_of_products < needed_number_of_products):
-            time.sleep(1)
+        while (number_of_products < needed_number_of_products):
             products = driver.find_elements(by=By.CLASS_NAME, value="product-title")
             products[number_of_products].find_element(by=By.TAG_NAME, value="a").click()
+
             additional_product_amount = random.randint(0, 1)
             for j in range(additional_product_amount):
                 driver.find_element(by=By.CLASS_NAME, value="touchspin-up").click()
-            time.sleep(2)
             add_to_cart = driver.find_element(by=By.CLASS_NAME, value="add-to-cart")
             if add_to_cart.get_property("disabled"):
                 # out of stock
                 number_of_products += 1
                 needed_number_of_products += 1
-                time.sleep(1)
-                driver.back()
-                driver.back()
                 if number_of_products + 1 > len(products):
                     break
                 else:
                     continue
             add_to_cart.click()
             number_of_products += 1
-            time.sleep(1)
-            driver.back()
             driver.back()
 
     except:
@@ -154,8 +150,8 @@ if __name__ == "__main__":
 
     # a. Dodanie do koszyka 10 produktów (w różnych ilościach) z dwóch różnych
     # kategorii
-    a_add_products("Spawarki elektrodowe")
-    a_add_products("Chemia spawalnicza")
+    a_add_products("SPAWARKI ELEKTRODOWE")
+    a_add_products("CHEMIA SPAWALNICZA")
 
     # b. Wyszukanie produktu po nazwie i dodanie do koszyka losowego produktu
     # spośród znalezionych
