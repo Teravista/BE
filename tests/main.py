@@ -28,6 +28,7 @@ def a_add_products(category):
             for j in range(additional_product_amount):
                 driver.find_element(by=By.CLASS_NAME, value="touchspin-up").click()
             add_to_cart = driver.find_element(by=By.CLASS_NAME, value="add-to-cart")
+            time.sleep(1)
             if add_to_cart.get_property("disabled"):
                 # out of stock
                 number_of_products += 1
@@ -41,7 +42,7 @@ def a_add_products(category):
             driver.back()
 
     except:
-        print("Error:   a) Adding products to cart")
+        print("Not enough products:   a) Adding products to cart")
     else:
         print("Success: a) Adding products to cart")
 
@@ -151,7 +152,7 @@ if __name__ == "__main__":
     # a. Dodanie do koszyka 10 produktów (w różnych ilościach) z dwóch różnych
     # kategorii
     a_add_products("SPAWARKI ELEKTRODOWE")
-    a_add_products("ŚRODKI OCHRONY OSOBISTEJ")
+    a_add_products("MATERIAŁY SPAWALNICZE")
 
     # b. Wyszukanie produktu po nazwie i dodanie do koszyka losowego produktu
     # spośród znalezionych
