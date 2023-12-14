@@ -104,7 +104,8 @@ def d_register():
         print("Success: d) Registering")
         time.sleep(2)
 
-def e_order_and_status():
+
+def e_order():
     try:
         driver.find_element(by=By.CLASS_NAME, value="shopping-cart").click()
         driver.find_element(by=By.CLASS_NAME, value="btn-primary").click()
@@ -115,23 +116,34 @@ def e_order_and_status():
         driver.find_element(By.NAME, "confirmDeliveryOption").click()
         driver.find_element(By.NAME, "conditions_to_approve[terms-and-conditions]").click()
         driver.find_element(by=By.ID, value="payment-confirmation").find_element(by=By.CLASS_NAME, value="btn-primary").click()
-        check_status()
     except:
         print("Error:   e) Ordering")
     else:
         print("Success: e) Ordering")
 
-def check_status():
+
+def i_check_status():
     try:
         driver.find_element(By.CLASS_NAME, "account").click()
         driver.find_element(By.ID, "history-link").click()
         driver.find_element(By.LINK_TEXT, "Szczegóły").click()
         driver.find_element(By.PARTIAL_LINK_TEXT, "Pobierz").click()
     except:
-        print("Error:   j) Checking status")
+        print("Error:   i) Checking status")
     else:
-        print("Success: j) Checking status")
+        print("Success: i) Checking status")
         time.sleep(2)
+
+
+def j_invoice():
+    try:
+        print("Invoice")
+    except:
+        print("Error:   i) Checking status")
+    else:
+        print("Success: i) Checking status")
+        time.sleep(2)
+
 
 if __name__ == "__main__":
     host = 'http://localhost:8080/index.php'
@@ -163,8 +175,12 @@ if __name__ == "__main__":
     # f. Wybór metody płatności: przy odbiorze,
     # g. Wybór jednego z dwóch przewoźników,
     # h. Zatwierdzenie zamówienia,
+    e_order()
+
     # i. Sprawdzenie statusu zamówienia.
+    i_check_status()
+
     # j. Pobranie faktury VAT
-    e_order_and_status()
+    j_invoice
 
     driver.quit()
