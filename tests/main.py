@@ -34,7 +34,10 @@ def a_add_products(category):
                 # out of stock
                 number_of_products += 1
                 needed_number_of_products += 1
-                continue
+                if number_of_products + 1 > len(products):
+                    break
+                else:
+                    continue
             add_to_cart.click()
             number_of_products += 1
     except:
