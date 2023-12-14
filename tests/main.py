@@ -151,7 +151,7 @@ if __name__ == "__main__":
     # a. Dodanie do koszyka 10 produktów (w różnych ilościach) z dwóch różnych
     # kategorii
     a_add_products("SPAWARKI ELEKTRODOWE")
-    a_add_products("CHEMIA SPAWALNICZA")
+    a_add_products("ŚRODKI OCHRONY OSOBISTEJ")
 
     # b. Wyszukanie produktu po nazwie i dodanie do koszyka losowego produktu
     # spośród znalezionych
