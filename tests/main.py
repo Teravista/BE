@@ -10,9 +10,7 @@ from selenium.webdriver.common.keys import Keys
 
 def a_add_products(category):
     try:
-        # collapse_menu = driver.find_element(by=By.CLASS_NAME, value="top-menu")
         action = ActionChains(driver=driver)
-        # action.move_to_element(collapse_menu).perform()
         driver.get("http://localhost:8080/index.php?id_category=2&controller=category")
         cat1 = driver.find_element(by=By.LINK_TEXT, value=category)
         action.move_to_element(cat1).click().perform()
@@ -130,9 +128,9 @@ if __name__ == "__main__":
 
     driver.implicitly_wait(7)
 
-    # skip cookies or sth
-    # driver.find_element(By.ID, "details-button")
-    # driver.find_element(By.ID, "proceed-link")
+    # skip https warning
+    driver.find_element(By.ID, "details-button").click()
+    driver.find_element(By.ID, "proceed-link").click()
 
     # a. Dodanie do koszyka 10 produktów (w różnych ilościach) z dwóch różnych
     # kategorii
