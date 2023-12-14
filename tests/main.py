@@ -19,9 +19,10 @@ def a_add_products(category):
         number_of_products = 0
         needed_number_of_products = 5
         while(number_of_products < needed_number_of_products):
+            time.sleep(1)
             products = driver.find_elements(by=By.CLASS_NAME, value="product-title")
             products[number_of_products].find_element(by=By.TAG_NAME, value="a").click()
-            additional_product_amount = random.randint(0, 4)
+            additional_product_amount = random.randint(0, 1)
             for j in range(additional_product_amount):
                 driver.find_element(by=By.CLASS_NAME, value="touchspin-up").click()
             time.sleep(2)
@@ -30,6 +31,7 @@ def a_add_products(category):
                 # out of stock
                 number_of_products += 1
                 needed_number_of_products += 1
+                time.sleep(1)
                 driver.back()
                 driver.back()
                 if number_of_products + 1 > len(products):
@@ -38,6 +40,7 @@ def a_add_products(category):
                     continue
             add_to_cart.click()
             number_of_products += 1
+            time.sleep(1)
             driver.back()
             driver.back()
 
@@ -50,7 +53,7 @@ def a_add_products(category):
 def b_search():
     try:
         search_box = driver.find_element(by=By.NAME, value="s")
-        search_box.send_keys("rx 6700")
+        search_box.send_keys("Spartus")
         search_box.send_keys(Keys.ENTER)
 
         products = driver.find_elements(by=By.CLASS_NAME, value="product-title")
@@ -113,9 +116,9 @@ def e_order():
     try:
         driver.find_element(by=By.CLASS_NAME, value="shopping-cart").click()
         driver.find_element(by=By.CLASS_NAME, value="btn-primary").click()
-        driver.find_element(By.NAME, "address1").send_keys("Nottingham NG7 2WS")
-        driver.find_element(By.NAME, "postcode").send_keys("12-345")
-        driver.find_element(By.NAME, "city").send_keys("Lenton")
+        driver.find_element(By.NAME, "address1").send_keys("Sobieskiego 3")
+        driver.find_element(By.NAME, "postcode").send_keys("80-123")
+        driver.find_element(By.NAME, "city").send_keys("Gdynia")
         driver.find_element(By.NAME, "confirm-addresses").click()
         driver.find_element(By.NAME, "confirmDeliveryOption").click()
         driver.find_element(By.NAME, "conditions_to_approve[terms-and-conditions]").click()
