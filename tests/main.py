@@ -19,10 +19,6 @@ def a_add_products(category):
         number_of_products = 0
         needed_number_of_products = 5
         while(number_of_products < needed_number_of_products):
-            driver.get("http://localhost:8080/index.php?id_category=2&controller=category")
-            cat1 = driver.find_element(by=By.LINK_TEXT, value=category)
-            cat1.click()
-            time.sleep(1)
             products = driver.find_elements(by=By.CLASS_NAME, value="product-title")
             products[number_of_products].find_element(by=By.TAG_NAME, value="a").click()
             additional_product_amount = random.randint(0, 4)
@@ -34,12 +30,17 @@ def a_add_products(category):
                 # out of stock
                 number_of_products += 1
                 needed_number_of_products += 1
+                driver.back()
+                driver.back()
                 if number_of_products + 1 > len(products):
                     break
                 else:
                     continue
             add_to_cart.click()
             number_of_products += 1
+            driver.back()
+            driver.back()
+
     except:
         print("Error:   a) Adding products to cart")
     else:
