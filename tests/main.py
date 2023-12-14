@@ -131,17 +131,6 @@ def i_check_status():
         driver.find_element(By.CLASS_NAME, "account").click()
         driver.find_element(By.ID, "history-link").click()
         driver.find_element(By.LINK_TEXT, "Szczegóły").click()
-        driver.find_element(By.PARTIAL_LINK_TEXT, "Pobierz").click()
-    except:
-        print("Error:   i) Checking status")
-    else:
-        print("Success: i) Checking status")
-        time.sleep(2)
-
-
-def j_invoice():
-    try:
-        print("Invoice")
     except:
         print("Error:   i) Checking status")
     else:
@@ -183,8 +172,5 @@ if __name__ == "__main__":
 
     # i. Sprawdzenie statusu zamówienia.
     i_check_status()
-
-    # j. Pobranie faktury VAT
-    j_invoice
 
     driver.quit()
