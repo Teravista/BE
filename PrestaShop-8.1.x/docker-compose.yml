@@ -1,0 +1,73 @@
+version: '3.8'
+
+volumes:
+  db-data:
+  psdata:
+
+services:
+    mysql:
+        image: mysql:5.7
+        container_name: mysqlDB
+        environment:
+            MYSQL_ROOT_PASSWORD: prestashop
+            MYSQL_DATABASE: prestashop
+        ports:
+            - "3306"
+        networks:
+            - prestashop
+        volumes:
+            - ./mysql:/var/lib/mysql:delegated
+        restart: always
+    
+    prestashop:
+        image: prestashop/prestashop:1.7.8
+        container_name: SpawaniePrestashop
+        build:
+            context: .
+            dockerfile: dockerfile
+        environment:
+            PS_DEV_MODE: 1
+            DISABLE_MAKE: ${DISABLE_MAKE:-0}
+            PS_INSTALL_AUTO: ${PS_INSTALL_AUTO:-1}
+            PS_FOLDER_INSTALL: ${PS_FOLDER_INSTALL:-install-devdev}
+            PS_FOLDER_ADMIN: ${PS_FOLDER_ADMIN:-admin-devdev}
+            PS_DOMAIN: ${PS_DOMAIN:-localhost:8080}
+            PS_DOMAIN_SSL: ${PS_DOMAIN_SSL:-localhost:443}
+            DB_SERVER: mysql
+            DB_PASSWD: ${DB_PASSWD:-prestashop}
+            DB_NAME: ${DB_NAME:-prestashop}
+            DB_PREFIX: ${DB_PREFIX:-ps_}
+            PS_COUNTRY: ${PS_COUNTRY:-pl}
+            PS_LANGUAGE: ${PS_LANGUAGE:-pl}
+            ADMIN_MAIL: ${ADMIN_MAIL:-demo@prestashop.com}
+            ADMIN_PASSWD: ${ADMIN_PASSWD:-12345678}
+            PS_ENABLE_SSL: ${PS_ENABLE_SSL:-1}
+            PS_SSL_ENABLED_EVERYWHERE: 1
+        ports:
+            - "8080:80"
+            - "443:443"
+        networks:
+            - prestashop
+        volumes:
+            - ./certs/sslcert.crt:/etc/ssl/certs/sslcert.crt
+            - ./certs/sslcert.crt:/usr/local/share/ca-certificates/sslcert.crt
+            - ./certs/sslcert.key:/etc/ssl/private/sslcert.key
+            - ./:/var/www/html/:delegated
+
+    phpmyadmin:
+      image: phpmyadmin/phpmyadmin
+      container_name: phpmyadmin
+      restart: unless-stopped
+      environment:
+            PMA_HOST: mysql
+            MYSQL_USERNAME: root
+            MYSQL_ROOT_PASSWORD: prestashop
+      networks:
+        - prestashop
+      ports:
+        - 8081:80
+      links:
+        - mysql
+
+networks:
+    prestashop:
