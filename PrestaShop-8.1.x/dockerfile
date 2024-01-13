@@ -2,7 +2,7 @@ FROM prestashop/prestashop:1.7.8
 
 COPY ./apache.conf /etc/apache2/sites-available/ssl.conf
 
-COPY ./ /var/www/html
+COPY ./html/ /var/www/html
 COPY ./certs/sslcert.crt /etc/ssl/certs/sslcert.crt
 COPY ./certs/sslcert.crt /usr/local/share/ca-certificates/sslcert.crt
 COPY ./certs/sslcert.key /etc/ssl/private/sslcert.key
