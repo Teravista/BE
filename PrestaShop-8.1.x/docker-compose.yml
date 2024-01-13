@@ -48,11 +48,6 @@ services:
             - "443:443"
         networks:
             - prestashop
-        volumes:
-            - ./certs/sslcert.crt:/etc/ssl/certs/sslcert.crt
-            - ./certs/sslcert.crt:/usr/local/share/ca-certificates/sslcert.crt
-            - ./certs/sslcert.key:/etc/ssl/private/sslcert.key
-            - ./:/var/www/html/:delegated
 
     phpmyadmin:
       image: phpmyadmin/phpmyadmin
