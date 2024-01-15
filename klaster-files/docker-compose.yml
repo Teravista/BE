@@ -1,0 +1,30 @@
+version '3'
+
+services:
+	prestashop:
+		image: 
+		container_name: prestashop
+		environment:
+			PS_DEV_MODE: 1
+			DB_SERVER: db
+			DB_NAME: BE_188555
+			DB_USER: root
+			DB_PASSWD: student
+		ports:
+			-"18855:443"
+		deploy:
+			restart_policy:
+				condition: on_failure
+				delay: 5s
+				max_attempts: 2
+				window: 60s
+			resources:
+				limits:
+					cpus: '0.5'
+					memory: 512M
+			networks:
+				- admin-mysql_default
+
+networks: 
+	admin-mysql_default:
+		external: true
