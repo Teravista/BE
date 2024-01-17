@@ -3,6 +3,8 @@ prestashop:
     user: root
     ports:
     	- 18855:443
+     depends_on:
+     	-memcached
   deploy:
     restart_policy:
       condition: on-failure
@@ -28,6 +30,23 @@ prestashop:
     ADMIN_PASSWD: 12345678
   networks:
 	- admin-mysql_default
+
+memcached:
+    image: memcached
+    container_name: BE_188555_memcached
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 2
+        window: 140s
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    networks:
+      - admin-mysql_default
+ 
 
 networks:
   admin-mysql_default:
