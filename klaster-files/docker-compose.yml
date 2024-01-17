@@ -1,6 +1,6 @@
 services:
   prestashop:
-    image: teravista/tutututru:latest
+    image: teravista/be_188555:latest
     user: root
     ports:
       - 18855:443
