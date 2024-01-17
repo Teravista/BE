@@ -1,30 +1,34 @@
-version '3'
+prestashop:
+    image: teravista/tutututru:latest
+    user: root
+    ports:
+    	- 18855:443
+  deploy:
+    restart_policy:
+      condition: on-failure
+      delay: 5s
+      max_attempts: 2
+      window: 70s
+    resources:
+      limits:
+        cpus: '0.5'
+        memory: 512M
+  environment:
+    PS_DEV_MODE: 0
+    PS_INSTALL_AUTO: 1
+    PS_FOLDER_INSTALL: install-dev
+    PS_FOLDER_ADMIN: admin-dev
+    DB_SERVER: db
+    DB_USER: root
+    DB_NAME: BE_188555
+    DB_PASSWD: student
+    PS_COUNTRY: pl
+    PS_LANGUAGE: pl
+    ADMIN_MAIL: demo@prestashop.com
+    ADMIN_PASSWD: 12345678
+  networks:
+	- admin-mysql_default
 
-services:
-	prestashop:
-		image: teravista/prestashop
-		container_name: prestashop
-		environment:
-			PS_DEV_MODE: 1
-			DB_SERVER: db
-			DB_NAME: BE_188555
-			DB_USER: root
-			DB_PASSWD: student
-		ports:
-			-"18855:443"
-		deploy:
-			restart_policy:
-				condition: on_failure
-				delay: 5s
-				max_attempts: 2
-				window: 60s
-			resources:
-				limits:
-					cpus: '0.5'
-					memory: 512M
-			networks:
-				- admin-mysql_default
-
-networks: 
-	admin-mysql_default:
-		external: true
+networks:
+  admin-mysql_default:
+    external: true
